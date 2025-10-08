@@ -1,7 +1,7 @@
 "use client"
 
 import { TrendingUp } from "lucide-react"
-import { RadialBar, RadialBarChart, Legend } from "recharts"
+import { LabelList, RadialBar, RadialBarChart } from "recharts"
 
 import {
   Card,
@@ -21,82 +21,73 @@ import {
 export const description = "A radial chart with a label"
 
 const chartData = [
-  { browser: "PM", visitors: 320, fill: "var(--chart-1)" },
-  { browser: "CM", visitors: 280, fill: "var(--chart-2)" },
-  { browser: "Brotherhood", visitors: 245, fill: "var(--chart-3)" },
-  { browser: "Service", visitors: 198, fill: "var(--chart-4)" },
-  { browser: "Fundraising", visitors: 165, fill: "var(--chart-5)" },
-  { browser: "Education", visitors: 142, fill: "#8b5cf6" },
-  { browser: "Rush", visitors: 98, fill: "#f59e0b" },
-  { browser: "Pro Credits", visitors: 75, fill: "#10b981" },
+  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
+  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
+  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
+  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
+  { browser: "other", visitors: 90, fill: "var(--color-other)" },
 ]
 
 const chartConfig = {
   visitors: {
-    label: "Credits",
+    label: "Visitors",
+  },
+  chrome: {
+    label: "Chrome",
     color: "var(--chart-1)",
+  },
+  safari: {
+    label: "Safari",
+    color: "var(--chart-2)",
+  },
+  firefox: {
+    label: "Firefox",
+    color: "var(--chart-3)",
+  },
+  edge: {
+    label: "Edge",
+    color: "var(--chart-4)",
+  },
+  other: {
+    label: "Other",
+    color: "var(--chart-5)",
   },
 } satisfies ChartConfig
 
 export function ChartRadialLabel() {
-  const pmValue = chartData.find((d) => d.browser === "PM")?.visitors ?? 0
-  const cmValue = chartData.find((d) => d.browser === "CM")?.visitors ?? 0
-  const pmBase = pmValue + cmValue || 1
-  const pmPercent = Math.round((pmValue / pmBase) * 100)
   return (
-    <Card className="flex flex-col">
+    <Card className="h-[380px] flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Most Credit Brother</CardTitle>
-        <CardDescription>August - December 2025</CardDescription>
+        <CardTitle>Radial Chart - Label</CardTitle>
+        <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
-      <CardContent className="flex justify-center">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <ChartContainer
-              config={chartConfig}
-              className="aspect-square h-[200px] w-[200px]"
-            >
-              <RadialBarChart
-                data={chartData}
-                startAngle={-90}
-                endAngle={380}
-                innerRadius={30}
-                outerRadius={100}
-              >
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel nameKey="browser" />}
-                />
-                <RadialBar dataKey="visitors" cornerRadius={6} background />
-              </RadialBarChart>
-            </ChartContainer>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-sm font-semibold">{pmPercent}%</div>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            {chartData.map((item) => (
-              <div key={item.browser} className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: item.fill }}
-                />
-                <span className="text-sm">{item.browser}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[250px]"
+        >
+          <RadialBarChart
+            data={chartData}
+            startAngle={-90}
+            endAngle={380}
+            innerRadius={30}
+            outerRadius={110}
+          >
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel nameKey="browser" />}
+            />
+            <RadialBar dataKey="visitors" background>
+              <LabelList
+                position="insideStart"
+                dataKey="browser"
+                className="fill-white capitalize mix-blend-luminosity"
+                fontSize={11}
+              />
+            </RadialBar>
+          </RadialBarChart>
+        </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 leading-none font-medium">
-          Wesley Kieu <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="text-muted-foreground leading-none">
-          Shows each category
-        </div>
-      </CardFooter>
     </Card>
   )
 }

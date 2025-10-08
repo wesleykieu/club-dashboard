@@ -1,12 +1,11 @@
 
-import AttendanceLineChart from "@/components/AttendanceLineChart";
-import { ChartRadialLabel } from "@/components/radialChart";
 import { Card, CardHeader, CardDescription, CardTitle, CardAction, CardFooter, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Users, Heart, MessageCircle, Bookmark, Share2 } from "lucide-react";
-import AllEventsLineChart from "@/components/AllEventsLineChart";
-import Countdown from "@/components/Countdown";
-import { ChartBarLabelCustom } from "@/components/charts";
+
+import UpcomingEvents from "@/components/UpcomingEvents";
+import { ChartBarHorizontal } from "@/components/BarChart";
+import { ChartRadialLabel } from "@/components/RadialChart";
 
 export default function Dashboard() {
   return (
@@ -50,7 +49,7 @@ export default function Dashboard() {
             </CardAction>
           </CardHeader>
           <CardFooter className="text-sm text-muted-foreground">
-            Instagram Followers
+            Instagram Followers (WILL CHANGE)
           </CardFooter>
         </Card>
         <Card className="@container/card">
@@ -80,26 +79,20 @@ export default function Dashboard() {
             <CardDescription>Court of Honor</CardDescription>
           </CardHeader>
           <CardContent className="-mt-2">
-            <Countdown target={"2025-11-22T00:00:00-08:00"} />
           </CardContent>
         </Card>
       </div>
       
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="col-span-1">
-          <AttendanceLineChart />
+          <UpcomingEvents />
         </div>
         <div className="col-span-1">
-          <ChartBarLabelCustom />
+          <ChartBarHorizontal />
         </div>
         <div className="col-span-1">
           <ChartRadialLabel />
-        </div>
-      </div>
-      <div className="w-full h-full">
-        <div className="w-full h-full">
-          <AllEventsLineChart />
         </div>
       </div>
     </div>
