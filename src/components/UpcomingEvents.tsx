@@ -15,7 +15,7 @@ import { Calendar } from "lucide-react"
 
 export default function UpcomingEvents() {
   return (
-    <Card className="h-[380px] flex flex-col">
+    <Card className="flex flex-col h-[380px]">
     <CardHeader>
       <CardTitle>Calendar</CardTitle>
       <CardDescription>Upcoming Events</CardDescription>
@@ -56,7 +56,7 @@ export default function UpcomingEvents() {
       </ScrollArea>
     </CardContent>
     <CardFooter>
-      <p>Card Footer</p>
+      <p>Pull top 3 events from master calender, updates once it pass</p>
     </CardFooter>
   </Card>
   )

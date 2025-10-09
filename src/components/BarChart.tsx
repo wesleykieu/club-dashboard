@@ -37,13 +37,13 @@ const chartConfig = {
 
 export function ChartBarHorizontal() {
   return (
-    <Card className="h-[380px] flex flex-col">
+    <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle>Bar Chart - Horizontal</CardTitle>
+        <CardTitle>Attendance For PM + CM top 5 bros</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1">
-        <ChartContainer config={chartConfig}>
+      <CardContent className="flex-1 overflow-hidden">
+        <ChartContainer config={chartConfig} className="w-full h-[265px]">
           <BarChart
             accessibilityLayer
             data={chartData}

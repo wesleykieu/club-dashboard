@@ -30,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar collapsible="icon" />
         <SidebarInset>
           <div className="p-4">
             <SidebarTrigger />

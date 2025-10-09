@@ -6,6 +6,7 @@ import { TrendingUp, Users, Heart, MessageCircle, Bookmark, Share2 } from "lucid
 import UpcomingEvents from "@/components/UpcomingEvents";
 import { ChartBarHorizontal } from "@/components/BarChart";
 import { ChartRadialLabel } from "@/components/RadialChart";
+import { ChartLineMultiple } from "@/components/LineChart";
 
 export default function Dashboard() {
   return (
@@ -49,7 +50,7 @@ export default function Dashboard() {
             </CardAction>
           </CardHeader>
           <CardFooter className="text-sm text-muted-foreground">
-            Instagram Followers (WILL CHANGE)
+            Figure out what to put here or remove, ask lynsey for ideas
           </CardFooter>
         </Card>
         <Card className="@container/card">
@@ -85,16 +86,22 @@ export default function Dashboard() {
       
       {/* Charts Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="col-span-1">
+        <div className="col-span-1 min-w-0">
           <UpcomingEvents />
         </div>
-        <div className="col-span-1">
+        <div className="col-span-1 min-w-0">
           <ChartBarHorizontal />
         </div>
-        <div className="col-span-1">
+        <div className="col-span-1 min-w-0">
           <ChartRadialLabel />
         </div>
       </div>
+
+      {/* Line Chart (fits container, no horizontal scroll) */}
+      <div className="min-w-0">
+        <ChartLineMultiple />
+      </div>
+      
     </div>
-  );
+  );  
 }
