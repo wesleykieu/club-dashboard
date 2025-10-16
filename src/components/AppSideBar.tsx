@@ -1,10 +1,19 @@
+"use client"
+
 import * as React from "react"
 import Image from "next/image"
+import Link from "next/link"
 import {
   GalleryVerticalEnd,
   Home,
   Users,
   BookOpen,
+  Settings2,
+  SquareTerminal,
+  ChevronRight,
+  User,
+  LogOut,
+  Mail,
 } from "lucide-react"
 
 import {
@@ -15,18 +24,32 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarFooter,
   SidebarHeader,
+  SidebarRail,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarRail,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
 } from "@/components/ui/sidebar"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 type NavItem = {
   title: string
@@ -36,8 +59,15 @@ type NavItem = {
   items?: NavItem[]
 }
 
-// This is sample data.
-const data: { navMain: NavItem[] } = {
+// Mock data for the sidebar
+const data = {
+  user: {
+    name: "Alex Johnson",
+    email: "alex.johnson@akpsi.org",
+    avatar: "/avatars/alex.jpg",
+    role: "Chapter President",
+    credits: 85,
+  },
   navMain: [
     {
       title: "Home",
@@ -84,10 +114,6 @@ const data: { navMain: NavItem[] } = {
           title: "Rush",
           url: "#",
         },
-        {
-          title: "Funraising",
-          url: "#",
-        },
       ],
     },
     {
@@ -102,15 +128,76 @@ const data: { navMain: NavItem[] } = {
         {
           title: "Master Spreadsheet",
           url: "#",
-        }
+        },
       ],
     },
   ],
 }
 
+// Navigation User Component
+function NavUser({ user }: { user: typeof data.user }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <SidebarMenuButton
+          size="lg"
+          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        >
+          <Avatar className="h-8 w-8 rounded-lg">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback className="rounded-lg">{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+          </Avatar>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">{user.name}</span>
+            <span className="truncate text-xs">{user.role}</span>
+          </div>
+          <ChevronRight className="ml-auto" />
+        </SidebarMenuButton>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+        side="bottom"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback className="rounded-lg">{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">{user.name}</span>
+              <span className="truncate text-xs">{user.email}</span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="gap-2">
+          <User className="h-4 w-4" />
+          Profile
+        </DropdownMenuItem>
+        <DropdownMenuItem className="gap-2">
+          <Mail className="h-4 w-4" />
+          Inbox
+        </DropdownMenuItem>
+        <DropdownMenuItem className="gap-2">
+          <Settings2 className="h-4 w-4" />
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="gap-2">
+          <LogOut className="h-4 w-4" />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -164,7 +251,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <NavUser user={data.user} />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )
-} 
+}
