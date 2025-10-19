@@ -4,8 +4,14 @@ from typing import List, Optional
 from pydantic import BaseModel
 import os
 
+# This is the API endpoint for the calendar that fetches the upcoming events from the Google Calendar API
+
+
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
+
+# BaseModel comes from Pydantic - a data validation library
+# Think of it as the blueprint for the data that we want to fetch from the Google Calendar API
 # Define what our response looks like
 class CalendarEvent(BaseModel):
     id: str
@@ -19,7 +25,8 @@ class CalendarResponse(BaseModel):
     events: List[CalendarEvent]
     count: int
 
-@router.get("/upcoming")
+
+@router.get("/upcoming") # This decorator tells FastAPI when someone makes a GET request to the /calendar/upcoming endpoint, it should call the function below
 async def get_upcoming_events():
     """API endpoint to get 3 upcoming events"""
     try:
