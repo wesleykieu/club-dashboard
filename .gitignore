@@ -63,3 +63,6 @@ Desktop.ini
 # temporary files
 *.tmp
 *.temp
+
+__pycache__/
+*.pyc
