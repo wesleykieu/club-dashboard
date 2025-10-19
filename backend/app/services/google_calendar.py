@@ -5,24 +5,25 @@ import os
 
 class GoogleCalendarService:
     """Service for interacting with Google Calendar API"""
-   
+    
+    # Defines the permissions needed for the API: read only
     SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
    
+    # Initialize the service when an instance is created
     def __init__(self):
         self.service_account_file = os.getenv('GOOGLE_SERVICE_ACCOUNT_FILE')
         if not self.service_account_file:
             raise Exception("GOOGLE_SERVICE_ACCOUNT_FILE environment variable not set")
-        self.service = self._get_calendar_service()
+        self.service = self._get_calendar_service()  # Calls get_calendar_service to authenticate and create the API client
    
     def _get_calendar_service(self):
         """Initialize and return the Google Calendar service"""
         try:
             credentials = service_account.Credentials.from_service_account_file(
-                self.service_account_file, 
+                self.service_account_file,
                 scopes=self.SCOPES
             )
-            
-            
+            # Create the Calendar API client and return the authenticated service object for making API calls
             service = build('calendar', 'v3', credentials=credentials)
             return service
         except Exception as e:
@@ -30,21 +31,28 @@ class GoogleCalendarService:
    
     def get_upcoming_events(self, max_results=3, calendar_email=None):
         """Fetch upcoming events from Google Calendar
-        
+       
         Args:
             max_results: Maximum number of events to return
             calendar_email: Calendar ID (email) to fetch events from
+       
+        Returns:
+            list: List of event dictionaries from Google Calendar API
+       
+        Raises:
+            Exception: If calendar email is not provided or environment variable is not set
+            Exception: If API call fails
         """
         try:
             # Use provided email or fall back to env variable
             if not calendar_email:
                 calendar_email = os.getenv('GOOGLE_CALENDAR_EMAIL')
-            
+           
             if not calendar_email:
                 raise Exception("Calendar email not provided and GOOGLE_CALENDAR_EMAIL not set")
-            
+           
             now = datetime.utcnow().isoformat() + 'Z'
-            
+           
             events_result = self.service.events().list(
                 calendarId=calendar_email,
                 timeMin=now,
