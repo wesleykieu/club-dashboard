@@ -2,8 +2,7 @@
 
 import * as React from "react"
 import { DirectorTabs } from "./director-tabs"
-import { EventList } from "./event-list"
-import { EventAttendance } from "./event-attendance"
+import { SpreadsheetView } from "./spreadsheet-view"
 import { AddEventDialog } from "./add-event-dialog"
 import { EditEventDialog } from "./edit-event-dialog"
 import { mockUsers, mockEvents, mockEntries } from "./lib/mock-data"
@@ -15,16 +14,13 @@ export function AttendanceManager() {
   const [events, setEvents] = React.useState<Event[]>(mockEvents)
   const [entries, setEntries] = React.useState<Entry[]>(mockEntries)
 
-  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(null)
   const [addEventDialogOpen, setAddEventDialogOpen] = React.useState(false)
   const [editEventDialogOpen, setEditEventDialogOpen] = React.useState(false)
+  const [eventToEdit, setEventToEdit] = React.useState<Event | null>(null)
 
-  // Pending changes for current event (before save)
+  // Pending changes for all cells (userId_eventId -> credit)
   const [pendingChanges, setPendingChanges] = React.useState<Map<string, number | ProCreditStatus>>(new Map())
-
-  const selectedEvent = selectedEventId
-    ? events.find((e) => e.id === selectedEventId)
-    : null
+  const [savedEntries, setSavedEntries] = React.useState<Entry[]>(mockEntries)
 
   // Handle adding new event
   const handleAddEvent = (name: string, date: string) => {
@@ -35,115 +31,146 @@ export function AttendanceManager() {
       director,
     }
     setEvents((prev) => [...prev, newEvent])
-    // Automatically open the new event for attendance
-    setSelectedEventId(newEvent.id)
   }
 
   // Handle editing event
-  const handleEditEvent = (updates: Partial<Event>) => {
-    if (!selectedEventId) return
+  const handleEditEvent = (event: Event) => {
+    setEventToEdit(event)
+    setEditEventDialogOpen(true)
+  }
+
+  // Handle saving edited event
+  const handleSaveEditedEvent = (updates: Partial<Event>) => {
+    if (!eventToEdit) return
 
     setEvents((prev) =>
       prev.map((event) =>
-        event.id === selectedEventId ? { ...event, ...updates } : event
+        event.id === eventToEdit.id ? { ...event, ...updates } : event
       )
     )
+    setEditEventDialogOpen(false)
+    setEventToEdit(null)
+  }
+
+  // Handle deleting event
+  const handleDeleteEvent = (eventId: string) => {
+    if (confirm("Are you sure you want to delete this event? All attendance data for this event will be lost.")) {
+      setEvents((prev) => prev.filter((e) => e.id !== eventId))
+      setEntries((prev) => prev.filter((e) => e.eventId !== eventId))
+      setPendingChanges((prev) => {
+        const updated = new Map(prev)
+        // Remove all pending changes for this event
+        Array.from(updated.keys()).forEach((key) => {
+          if (key.endsWith(`_${eventId}`)) {
+            updated.delete(key)
+          }
+        })
+        return updated
+      })
+    }
   }
 
   // Handle attendance update (stores in pending changes)
-  const handleUpdateAttendance = (userId: string, credit: number | ProCreditStatus) => {
+  const handleUpdateAttendance = (userId: string, eventId: string, credit: number | ProCreditStatus) => {
     setPendingChanges((prev) => {
       const updated = new Map(prev)
-      updated.set(userId, credit)
+      const key = `${userId}_${eventId}`
+      updated.set(key, credit)
       return updated
     })
   }
 
-  // Save all pending changes for the current event
+  // Save all pending changes
   const handleSaveAttendance = () => {
-    if (!selectedEventId) return
+    const newEntries: Entry[] = []
+    const updatedEntryIds = new Set<string>()
 
+    // Convert pending changes to entries
+    pendingChanges.forEach((credit, key) => {
+      const [userId, eventId] = key.split("_")
+      newEntries.push({
+        id: `en${Date.now()}_${Math.random()}`,
+        userId,
+        eventId,
+        credit,
+      })
+      updatedEntryIds.add(key)
+    })
+
+    // Update entries: remove old entries for changed cells, add new ones
     setEntries((prev) => {
-      // Remove existing entries for this event
-      const filtered = prev.filter((e) => e.eventId !== selectedEventId)
-
-      // Add new entries from pending changes
-      const newEntries: Entry[] = Array.from(pendingChanges.entries()).map(
-        ([userId, credit]) => ({
-          id: `en${Date.now()}_${userId}`,
-          userId,
-          eventId: selectedEventId,
-          credit,
-        })
-      )
-
+      const filtered = prev.filter((entry) => {
+        const key = `${entry.userId}_${entry.eventId}`
+        return !updatedEntryIds.has(key)
+      })
       return [...filtered, ...newEntries]
     })
 
-    // Clear pending changes
-    setPendingChanges(new Map())
+    // Update saved entries and clear pending changes
+    setSavedEntries((prev) => {
+      const filtered = prev.filter((entry) => {
+        const key = `${entry.userId}_${entry.eventId}`
+        return !updatedEntryIds.has(key)
+      })
+      return [...filtered, ...newEntries]
+    })
 
-    // Show success message
+    setPendingChanges(new Map())
     alert("Attendance saved successfully!")
   }
 
-  // When selecting an event, populate pending changes with existing entries
-  React.useEffect(() => {
-    if (selectedEventId) {
-      const eventEntries = entries.filter((e) => e.eventId === selectedEventId)
-      const changes = new Map<string, number | ProCreditStatus>()
-      eventEntries.forEach((entry) => {
-        changes.set(entry.userId, entry.credit)
-      })
-      setPendingChanges(changes)
-    } else {
-      setPendingChanges(new Map())
-    }
-  }, [selectedEventId, entries])
+  // Cancel pending changes
+  const handleCancelChanges = () => {
+    setPendingChanges(new Map())
+    setEntries(savedEntries)
+  }
 
   // Merge pending changes with existing entries for display
   const displayEntries = React.useMemo(() => {
-    if (!selectedEventId || pendingChanges.size === 0) return entries
+    if (pendingChanges.size === 0) return entries
 
-    // Create new entries array with pending changes applied
-    const filtered = entries.filter((e) => e.eventId !== selectedEventId)
-    const updated: Entry[] = Array.from(pendingChanges.entries()).map(
-      ([userId, credit]) => ({
-        id: `temp_${userId}`,
+    // Create a map of current entries
+    const entryMap = new Map<string, Entry>()
+    entries.forEach((entry) => {
+      const key = `${entry.userId}_${entry.eventId}`
+      entryMap.set(key, entry)
+    })
+
+    // Apply pending changes
+    pendingChanges.forEach((credit, key) => {
+      const [userId, eventId] = key.split("_")
+      entryMap.set(key, {
+        id: `temp_${key}`,
         userId,
-        eventId: selectedEventId,
+        eventId,
         credit,
       })
-    )
+    })
 
-    return [...filtered, ...updated]
-  }, [entries, selectedEventId, pendingChanges])
+    return Array.from(entryMap.values())
+  }, [entries, pendingChanges])
+
+  const hasChanges = pendingChanges.size > 0
 
   return (
     <div className="space-y-6">
       {/* Director Tabs */}
       <DirectorTabs value={director} onValueChange={setDirector} />
 
-      {/* Show either event list or event attendance */}
-      {selectedEvent ? (
-        <EventAttendance
-          event={selectedEvent}
-          users={users}
-          entries={displayEntries}
-          onBack={() => setSelectedEventId(null)}
-          onUpdateAttendance={handleUpdateAttendance}
-          onSave={handleSaveAttendance}
-          onEditEvent={() => setEditEventDialogOpen(true)}
-        />
-      ) : (
-        <EventList
-          events={events}
-          entries={entries}
-          director={director}
-          onEventClick={setSelectedEventId}
-          onAddEvent={() => setAddEventDialogOpen(true)}
-        />
-      )}
+      {/* Spreadsheet View */}
+      <SpreadsheetView
+        users={users}
+        events={events}
+        entries={displayEntries}
+        director={director}
+        onUpdateAttendance={handleUpdateAttendance}
+        onAddEvent={() => setAddEventDialogOpen(true)}
+        onEditEvent={handleEditEvent}
+        onDeleteEvent={handleDeleteEvent}
+        onSave={handleSaveAttendance}
+        onCancel={handleCancelChanges}
+        hasChanges={hasChanges}
+      />
 
       {/* Add Event Dialog */}
       <AddEventDialog
@@ -154,12 +181,12 @@ export function AttendanceManager() {
       />
 
       {/* Edit Event Dialog */}
-      {selectedEvent && (
+      {eventToEdit && (
         <EditEventDialog
           open={editEventDialogOpen}
           onOpenChange={setEditEventDialogOpen}
-          event={selectedEvent}
-          onSave={handleEditEvent}
+          event={eventToEdit}
+          onSave={handleSaveEditedEvent}
         />
       )}
     </div>
