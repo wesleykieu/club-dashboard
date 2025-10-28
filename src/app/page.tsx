@@ -5,7 +5,7 @@ import { TrendingUp, Users, Heart, MessageCircle, Bookmark, Share2 } from "lucid
 
 import UpcomingEvents from "@/components/UpcomingEvents";
 import { ChartBarHorizontal } from "@/components/BarChart";
-import { ChartRadialLabel } from "@/components/RadialChart";
+import { ChartRadialLabel } from "@/components/radialChart";
 import { ChartLineMultiple } from "@/components/LineChart";
 
 export default function Dashboard() {
